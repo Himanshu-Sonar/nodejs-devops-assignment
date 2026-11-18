@@ -6,28 +6,50 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo 'Source code is available in workspace'
+                echo 'Checking out source code from GitHub'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo 'Installing Node.js dependencies'
                 sh 'npm ci'
             }
         }
 
         stage('Test Application') {
             steps {
-                echo 'Running application tests'
                 sh 'npm test'
             }
         }
 
-        stage('Build Successful') {
+        stage('Deploy Application') {
             steps {
-                echo 'Node.js application passed CI checks!'
+                sh '''
+                    rsync -av --delete \
+                    --exclude=node_modules \
+                    ./ /opt/nodejs-app/
+
+                    cd /opt/nodejs-app
+
+                    npm ci --omit=dev
+
+                    if pm2 describe nodejs-app >/dev/null 2>&1; then
+                        pm2 restart nodejs-app
+                    else
+                        pm2 start app.js --name nodejs-app
+                    fi
+                '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Application deployed successfully!'
+        }
+
+        failure {
+            echo 'Pipeline failed. Check the console output.'
         }
     }
 }
