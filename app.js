@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
         </head>
         <body>
             <div class="container">
-                <h1>Welcome to My DevOps Project!</h1>
+                <h1>Welcome to My Automated CI/CD Project!</h1>
                 <p>Node.js Application Running Successfully</p>
                 <p>Server: AWS EC2 Ubuntu</p>
                 <p>Deployment: Jenkins CI/CD</p>
