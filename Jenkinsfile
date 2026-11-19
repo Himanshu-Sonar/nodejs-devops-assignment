@@ -6,7 +6,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                echo 'Checking out source code from GitHub'
+                echo 'Source code checked out from GitHub'
             }
         }
 
@@ -25,27 +25,21 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 sh '''
-                    rsync -av --delete \
-                    --exclude=node_modules \
-                    ./ /opt/nodejs-app/
-
-                    cd /opt/nodejs-app
-
-                    npm ci --omit=dev
-
-                    if pm2 describe nodejs-app >/dev/null 2>&1; then
-                        pm2 restart nodejs-app
-                    else
-                        pm2 start app.js --name nodejs-app
-                    fi
+                    sudo -u ubuntu -H /usr/local/bin/deploy-node-app "$WORKSPACE"
                 '''
+            }
+        }
+
+        stage('Verify Application') {
+            steps {
+                sh 'curl -f http://127.0.0.1:3000/health'
             }
         }
     }
 
     post {
         success {
-            echo 'Application deployed successfully!'
+            echo 'Application deployed and verified successfully!'
         }
 
         failure {
